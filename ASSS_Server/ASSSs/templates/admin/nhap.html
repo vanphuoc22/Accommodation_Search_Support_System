@@ -1,0 +1,635 @@
+{% extends 'admin/base_site.html' %}
+{% block content %}
+<style>
+  {% include 'admin/css/core.css' %}
+  {% include 'admin/css/style.css' %}
+<!--  {% include 'admin/css/style-min.css' %}-->
+<!--  {% include 'admin/css/icon-font.css' %}-->
+<!--  {% include 'admin/css/icon-font-min.css' %}-->
+</style>
+
+<div id="main-stats" style="margin : auto" >
+			<div class="xs-pd-20-10 pd-ltr-20">
+				<div class="title pb-20">
+					<h2 class="h3 mb-0">Accommodation Search Support System</h2>
+				</div>
+
+				<div class="row pb-10">
+					<div class="col-xl-3 col-lg-3 col-md-6 mb-20">
+						<div class="card-box height-100-p widget-style3">
+							<div class="d-flex flex-wrap">
+								<div class="widget-data">
+									<div class="weight-700 font-24 text-dark">{{count_info_sys.total_account}}</div>
+									<div class="font-14 text-secondary weight-500">
+										Total Number Of Accounts
+									</div>
+								</div>
+								<div class="widget-icon">
+									<div class="icon">
+										<img style="padding:5px" src="https://res.cloudinary.com/dstqvlt8d/image/upload/v1704210970/ASSS-icon/zalo_last_screenshot_tjitbd.png">
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-xl-3 col-lg-3 col-md-6 mb-20">
+						<div class="card-box height-100-p widget-style3">
+							<div class="d-flex flex-wrap">
+								<div class="widget-data">
+									<div class="weight-700 font-24 text-dark">{{count_info_sys.total_post}}</div>
+									<div class="font-14 text-secondary weight-500">
+										               Total Number Of Posts In {{count_info_sys.year}}
+									</div>
+								</div>
+								<div class="widget-icon">
+									<div class="icon">
+										<img style="padding:3px" src="https://res.cloudinary.com/dstqvlt8d/image/upload/v1704210964/ASSS-icon/home--v2_lhj8t8.png">
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-xl-3 col-lg-3 col-md-6 mb-20">
+						<div class="card-box height-100-p widget-style3">
+							<div class="d-flex flex-wrap">
+								<div class="widget-data">
+									<div class="weight-700 font-24 text-dark">{{count_info_sys.total_price}}</div>
+									<div class="font-14 text-secondary weight-500">
+										Total Amount Of Money In {{count_info_sys.year}}
+									</div>
+								</div>
+								<div class="widget-icon">
+									<div class="icon">
+										<img style="padding:3 px" src="https://res.cloudinary.com/dstqvlt8d/image/upload/v1704210964/ASSS-icon/11301129_dgydqc.png">
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-xl-3 col-lg-3 col-md-6 mb-20">
+						<div class="card-box height-100-p widget-style3">
+							<div class="d-flex flex-wrap">
+								<div class="widget-data">
+									<div class="weight-700 font-24 text-dark">{{count_info_sys.growth_rate}}%</div>
+									<div class="font-14 text-secondary weight-500">Account Number Growth Rate</div>
+								</div>
+								<div class="widget-icon" >
+									<div class="icon" data-color="#09cc06">
+										<img style="padding:5px" src="https://res.cloudinary.com/dstqvlt8d/image/upload/v1704211704/ASSS-icon/273524_tkvl1r.png">
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="row pb-10">
+					<div class="col-md-8 mb-20">
+						<div class="card-box height-100-p pd-20">
+							<div
+								class="d-flex flex-wrap justify-content-between align-items-center pb-0 pb-md-3"
+							>
+								<div class="h5 mb-md-0" style="width:40%">Account Statistics by {%if statistics_type == "Statistics_month"%}
+									Month {{selected_year}}
+								{%endif%}
+								{%if statistics_type == "Statistics_quarter"%}
+									Quarter {{selected_year}}
+								{%endif%}
+								{%if statistics_type == "Statistics_year"%}
+									Year from {{selected_year}} to {{count_info_sys.year}}
+								{%endif%}
+								</div>
+								<form method="GET" action="{% url 'stats_view'%}">
+									<div class="form-group mb-md-0">
+										<select name="statistics_type">
+											<option value="Statistics_month">Statistics by Month</option>
+											<option value="Statistics_quarter">Statistics by Quarter</option>
+											<option value="Statistics_year">Statistics by Year</option>
+										</select>
+										<select name="selected_year">
+											{% for y in year_data %}
+												<option value="{{ y }}">{{ y }}</option>
+											{% endfor %}
+										</select>
+										<button style="padding:1px 5px; color: white; background-color: green; " type="submit">Filter</button>
+									</div>
+								</form>
+							</div>
+							<div style="color:green ; font-size:12px" id="yearNotice"></div>
+							<div style="overflow: hidden; margin-top:10%">
+								{%if statistics_type == "Statistics_month"%}
+									<canvas id="myChart" width="400"></canvas>
+								{%endif%}
+								{%if statistics_type == "Statistics_quarter"%}
+									<canvas id="myChartQ" width="400"></canvas>
+								{%endif%}
+								{%if statistics_type == "Statistics_year"%}
+									<canvas id="myChartY" width="400"></canvas>
+								{%endif%}
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 mb-20">
+						<div
+							class="card-box min-height-200px pd-20 mb-20" style="background-color:rgb(138 156 135)"
+						>
+							<div class="d-flex justify-content-between pb-20 text-white">
+								<div style="width:80px" class="icon h1 text-white">
+									<img src="https://res.cloudinary.com/dstqvlt8d/image/upload/v1704212169/ASSS-icon/8158309_ng1aif.png">
+								</div>
+								<div class="font-14 text-right">
+									<div><img style="height:20px" src="https://res.cloudinary.com/dstqvlt8d/image/upload/v1704213251/ASSS-icon/snapedit_1704213237338_s8yqex.png">{{count_host.active_percentage}}%</div>
+									<div class="font-12">Percentage of active accounts</div>
+								</div>
+							</div>
+							<div style="height:90px"  class="d-flex justify-content-between align-items-end">
+								<div class="text-white">
+									<div class="font-14">Account Host</div>
+									<div class="font-24 weight-500">{{count_host.total_hosts}}</div>
+								</div>
+								<div class="max-width-150">
+									<canvas id="pieChartH"></canvas>
+								</div>
+							</div>
+						</div>
+						<div class="card-box min-height-200px pd-20 " style="background-color:rgb(166 160 106)">
+							<div class="d-flex justify-content-between pb-20 text-white">
+								<div style="width:80px" class="icon h1 text-white">
+									<img src="https://res.cloudinary.com/dstqvlt8d/image/upload/v1704212168/ASSS-icon/1464180_mwerkt.png">
+								</div>
+								<div class="font-14 text-right">
+									<div><img style="height:20px" src="https://res.cloudinary.com/dstqvlt8d/image/upload/v1704213251/ASSS-icon/snapedit_1704213237338_s8yqex.png">{{count_user.active_percentage}}%</div>
+									<div class="font-12">Percentage of active accounts</div>
+								</div>
+							</div>
+							<div style="height:90px" class="d-flex justify-content-between align-items-end">
+								<div class="text-white">
+									<div class="font-14">Account User</div>
+									<div class="font-24 weight-500">{{count_user.total_users}}</div>
+								</div>
+								<div class="max-width-150">
+									<canvas id="pieChartU"></canvas>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-lg-4 col-md-6 mb-20">
+						<div class="card-box height-100-p pd-20 min-height-200px" style="color: black">
+							<div class="d-flex justify-content-between pb-10">
+								<div class="h5 mb-0">Top Hosts</div>
+								<div class="font-12">
+									Number of posts in {{count_info_sys.year}}
+								</div>
+							</div>
+							<div class="user-list">
+								<ul>
+									{% for toph in top_hosts %}
+									<li style="margin-top:10px" class="d-flex align-items-center justify-content-between">
+										<div class="name-avatar d-flex align-items-center pr-2">
+											<div class="avatar mr-2 flex-shrink-0">
+												<img
+													src='{{toph.user.avatar.url}}'
+													class="border-radius-100 box-shadow"
+													width="50"
+													height="50"
+													alt=""
+												/>
+											</div>
+											<div class="txt">
+												<span
+													class="badge badge-pill badge-sm"
+													data-bgcolor="#e7ebf5"
+													data-color="#265ed7"
+													>{{toph.avg}}</span>
+												<div class="font-14 weight-600">{{toph.user.last_name}}</div>
+												<div class="font-12 weight-500" data-color="#b2b1b6">
+													{{toph.user.first_name}}
+												</div>
+											</div>
+										</div>
+										<div class="cta flex-shrink-0">
+											<div class="font-14" data-color="#b2b1b6">
+												{{toph.user.post_count}}
+											</div>
+										</div>
+									</li>
+									{% endfor %}
+								</ul>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-4 col-md-6 mb-20">
+						<div class="card-box pd-20 min-height-200px">
+							<div>
+								<div class="h5 mb-0">Posts Growth Rate Chart</div>
+
+							<canvas style="max-height:350px" id="pieChartP"></canvas>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-4 col-md-12 mb-20">
+						<div class="card-box height-100-p pd-20 min-height-200px" style="color: black">
+							<div class="d-flex justify-content-between pb-10">
+								<div class="h5 mb-0">Host With The Most Followers</div>
+								<div class="font-12">
+<!--									Number of posts in {{count_info_sys.year}}-->
+								</div>
+							</div>
+							<div class="user-list">
+								<ul>
+									{% for hh in hot_hots %}
+									<li style="margin-top:10px" class="d-flex align-items-center justify-content-between">
+										<div class="name-avatar d-flex align-items-center pr-2">
+											<div class="avatar mr-2 flex-shrink-0">
+												<img
+													src='{{hh.user.avatar.url}}'
+													class="border-radius-100 box-shadow"
+													width="50"
+													height="50"
+													alt=""
+												/>
+											</div>
+											<div class="txt">
+												<span
+													class="badge badge-pill badge-sm"
+													data-bgcolor="#e7ebf5"
+													data-color="#265ed7"
+													>{{hh.avg}}</span>
+												<div class="font-14 weight-600">{{hh.user.last_name}}</div>
+												<div class="font-12 weight-500" data-color="#b2b1b6">
+													{{hh.user.first_name}}
+												</div>
+											</div>
+										</div>
+										<div class="cta flex-shrink-0">
+											<div class="font-14" data-color="#b2b1b6">
+												{{hh.user.followers_number}} follower
+											</div>
+										</div>
+									</li>
+									{% endfor %}
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div id="duyyyyy" class="card-box pb-10">
+					<div class="h5 pd-20 mb-0" style="background-color:#4f5f6d; color:white">Top Contributor</div>
+					<table class="data-table table nowrap">
+						<thead style="background-color:#647483; color:white">
+							<tr>
+								<th class="table-plus">Full Name</th>
+								<th>Gender</th>
+								<th>Day Of Birth</th>
+								<th>Quantity Of Followers</th>
+								<th>Information Of Quantity</th>
+								<th class="datatable-nosort">Total Revenue</th>
+							</tr>
+						</thead>
+						<tbody style="background-color:#8595a5; color:white">
+							{%for ha in top_host_active%}
+								<tr>
+								<td class="table-plus" style="text-align: center;">
+									<div class="name-avatar d-flex align-items-center">
+										<div class="avatar mr-2 flex-shrink-0">
+											<img
+												src="{{ha.user.avatar.url}}"
+												class="border-radius-100 shadow"
+												width="40"
+												height="40"
+												alt=""
+											/>
+										</div>
+										<div class="txt">
+											<div class="weight-600">{{ha.user.first_name}}  {{ha.user.last_name}}</div>
+										</div>
+									</div>
+								</td>
+								<td>{{ha.user.gender}}</td>
+								<td>{{ha.user.dob}}</td>
+								<td>{{ha.followers}} followers</td>
+								<td>Quantity Post : {{ ha.posts }} && Quantity like : {{ ha.likes }} </td>
+								<td>{{ha.prices}}</td>
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+
+				<div class="title pb-20 pt-20">
+					<h2 class="h3 mb-0">Contact</h2>
+				</div>
+
+				<div class="row">
+					<div class="col-md-4 mb-20">
+						<a href="https://www.paypal.com/vn/home" class="card-box d-block mx-auto pd-20 text-secondary" >
+							<div class="img pb-30">
+								<iframe src="https://giphy.com/embed/3oEduJmTLJlAxYqN7W"  width="100%" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>
+							</div>
+							<div class="content">
+								<h3 class="h4">Account inactive for 2 months : {{ u_2m.count }}</h3>
+								<div style="max-height: 150px; overflow: auto;">
+								{% for toph in u_2m.user %}
+									<div style="border: 2px solid #000000; padding:5px; margin:4px">
+										<div class="mb-10">Name: {{toph.first_name}} {{toph.last_name}}</div>
+										<div class="mb-10">Phone number : {{toph.phonenumber}}</div>
+										<div class="mb-10">Inactive date from :{{ toph.deleted_date}}</div>
+									</div>
+								{% endfor %}
+								</div>
+							</div>
+						</a>
+					</div>
+					<div class="col-md-4 mb-20">
+						<a href="https://www.google.com/maps/place/Tr%C6%B0%E1%BB%9Dng+%C4%90%E1%BA%A1i+h%E1%BB%8Dc+M%E1%BB%9F+TP.HCM+-+C%C6%A1+s%E1%BB%9F+1/@10.7763337,106.6876542,17z/data=!3m1!4b1!4m6!3m5!1s0x31752f3ae35e3725:0x20c5174a47f97be3!8m2!3d10.7763284!4d106.6902291!16s%2Fm%2F02qqlv4?entry=ttu" class="card-box d-block mx-auto pd-20 text-secondary">
+							<div class="img pb-30">
+								<img style="max-height:150px" src="https://res.cloudinary.com/dstqvlt8d/image/upload/v1705860757/ASSS-icon/Google-Maps-PNG-HD-Image_1_.png_evofxw.png" alt="" />
+							</div>
+							<div class="content">
+								<h3 class="h4">Locations</h3>
+								<p style="max-height: 150px;">
+									<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.456141986795!2d106.68765417451716!3d10.77633365919653!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f3ae35e3725%3A0x20c5174a47f97be3!2zVHLGsOG7nW5nIMSQ4bqhaSBo4buNYyBN4bufIFRQLkhDTSAtIEPGoSBz4bufIDE!5e0!3m2!1svi!2s!4v1705860175907!5m2!1svi!2s" width="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+								</p>
+							</div>
+						</a>
+					</div>
+					<div class="col-md-4 mb-20">
+						<a href="https://github.com/TrinhBaoDuy/Accommodation_Search_Support_System" class="card-box d-block mx-auto pd-20 text-secondary">
+							<div class="img pb-30">
+								<img style="max-height: 150px;" src="https://res.cloudinary.com/dstqvlt8d/image/upload/v1705861468/ASSS-icon/GitHub-Emblem_n9fxud.png" alt="" />
+							</div>
+							<div class="content">
+								<h3 class="h4">Git Infomatinon</h3>
+								<p style="max-height: 150px;">
+									<div class="mb-20">Accommodation Search Support System</div>
+									<div class="mb-20">trinhbaoduy.26012019@gmail.com</div>
+									<div class="mb-20">@2024 Copyright</div>
+								</p>
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  let labels = [];
+  let activeUsersData = [];
+  let activeHostsData = [];
+  let notactiveUsersData = [];
+  let notactiveHostsData = [];
+
+  {% for u in stats_user_role_by_month %}
+    labels.push('Tháng'+'{{ u.month }}');
+    activeHostsData.push({{ u.active_users_role_is_host }});
+    activeUsersData.push({{ u.active_users_role_is_user }});
+    notactiveUsersData.push({{ u.not_active_users_role_is_user }});
+    notactiveHostsData.push({{ u.not_active_users_role_is_host }});
+  {% endfor %}
+
+   console.log(labels)
+
+  var ctx = document.getElementById("myChart").getContext('2d');
+  var myChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+          labels:["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+          datasets: [{
+              label: 'Users active account',
+              data: activeUsersData,
+              backgroundColor: 'rgba(255, 75, 9, 1)',
+              borderColor: 'rgba(255, 75, 9, 1)',
+              borderWidth: 1
+          },
+          {
+              label: 'Users active inaccount',
+              data: notactiveUsersData,
+              backgroundColor: 'rgba(54, 162, 235, 1)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1
+          },
+          {
+              label: 'Hosts active account',
+              data: activeHostsData,
+              backgroundColor: 'rgba(5, 54, 77, 1)',
+              borderColor: 'rgba(5, 54, 77, 1)',
+              borderWidth: 1
+          },
+          {
+              label: 'Hosts active inaccount',
+              data: notactiveHostsData,
+              backgroundColor: 'rgba(18, 145, 51, 1)',
+              borderColor: 'rgba(18, 145, 51, 1)',
+              borderWidth: 1
+          }]
+      },
+      options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+  });
+</script>
+<script>
+  let labelsQ = [];
+  let activeUsersDataQ = [];
+  let activeHostsDataQ = [];
+  let inactiveUsersDataQ = [];
+  let inactiveHostsDataQ = [];
+
+  {% for u1 in stats_user_role_by_quarter %}
+    labelsQ.push('{{ u1.quarter}}');
+    activeHostsDataQ.push({{ u1.active_users_role_is_host }});
+    activeUsersDataQ.push({{ u1.active_users_role_is_user }});
+    inactiveUsersDataQ.push({{ u1.not_active_users_role_is_user }});
+    inactiveHostsDataQ.push({{ u1.not_active_users_role_is_host }});
+  {% endfor %}
+
+  console.log(labelsQ)
+  var ctxQ = document.getElementById("myChartQ").getContext('2d');
+  var myChartQ = new Chart(ctxQ, {
+      type: 'line',
+      data: {
+          labels: labelsQ,
+          datasets: [{
+              label: 'Users active account',
+              data: activeUsersDataQ,
+              backgroundColor: 'rgba(255, 75, 9, 1)',
+              borderColor: 'rgba(255, 75, 9, 1)',
+              borderWidth: 1
+          },
+          {
+              label: 'Users inactive account',
+              data: inactiveUsersDataQ,
+              backgroundColor: 'rgba(54, 162, 235, 1)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1
+          },
+          {
+              label: 'Hosts active account',
+              data: activeHostsDataQ,
+              backgroundColor: 'rgba(5, 54, 77, 1)',
+              borderColor: 'rgba(5, 54, 77, 1)',
+              borderWidth: 1
+          },
+          {
+              label: 'Hosts inactive account',
+              data: inactiveHostsDataQ,
+              backgroundColor: 'rgba(18, 145, 51, 1)',
+              borderColor: 'rgba(18, 145, 51, 1)',
+              borderWidth: 1
+          }]
+      },
+      options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+  });
+</script>
+<script>
+  let labelsY = [];
+  let activeUsersDataY = [];
+  let activeHostsDataY = [];
+  let inactiveUsersDataY = [];
+  let inactiveHostsDataY = [];
+
+  {% for u in stats_user_role_by_year %}
+    labelsY.push({{ u.year }});
+    activeHostsDataY.push({{ u.active_users_role_is_host }});
+    activeUsersDataY.push({{ u.active_users_role_is_user }});
+    inactiveUsersDataY.push({{ u.not_active_users_role_is_user }});
+    inactiveHostsDataY.push({{ u.not_active_users_role_is_host }});
+  {% endfor %}
+
+  console.log(labelsY)
+  var ctxY = document.getElementById("myChartY").getContext('2d');
+  var myChartY = new Chart(ctxY, {
+      type: 'line',
+      data: {
+          labels: labelsY,
+          datasets: [{
+              label: 'Users active account',
+              data: activeUsersDataY,
+              backgroundColor: 'rgba(255, 75, 9, 1)',
+              borderColor: 'rgba(255, 75, 9, 1)',
+              borderWidth: 1
+          },
+          {
+              label: 'Users inactive account',
+              data: inactiveUsersDataY,
+              backgroundColor: 'rgba(54, 162, 235, 1)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1
+          },
+          {
+              label: 'Hosts active account',
+              data: activeHostsDataY,
+              backgroundColor: 'rgba(5, 54, 77, 1)',
+              borderColor: 'rgba(5, 54, 77, 1)',
+              borderWidth: 1
+          },
+          {
+              label: 'Hosts inactive account',
+              data: inactiveHostsDataY,
+              backgroundColor: 'rgba(18, 145, 51, 1)',
+              borderColor: 'rgba(18, 145, 51, 1)',
+              borderWidth: 1
+          }]
+      },
+      options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+  });
+</script>
+<script>
+    window.onload = () => {
+      const ctxH = document.getElementById('pieChartH');
+	  const ctxU = document.getElementById('pieChartU');
+	  const ctxP = document.getElementById('pieChartP');
+      new Chart(ctxH, {
+        type: 'pie',
+        data: {
+          labels: ['Active','Inactive'],
+          datasets: [{
+            label: 'Host Account',
+            data: ['{{count_host.active_hosts}}','{{count_host.not_active_hosts}}'],
+            borderWidth: 1,
+            backgroundColor: [
+              'rgba(5, 54, 77, 1)',
+              'rgba(18, 145, 51, 1)',
+            ]
+          }]
+        },
+      });
+
+      new Chart(ctxU, {
+        type: 'pie',
+        data: {
+          labels: ['Active','Inactive'],
+          datasets: [{
+            label: 'User Account',
+            data: ['{{count_user.active_users}}','{{count_user.not_active_users}}'],
+            borderWidth: 1,
+            backgroundColor: [
+              'rgba(255, 75, 9, 1)',
+              'rgba(54, 162, 235, 1)',
+            ]
+          }]
+        },
+      });
+
+    new Chart(ctxP, {
+        type: 'pie',
+        data: {
+          labels: ['Number of Post in {{count_post.year}}','Number of Post in {{count_post.part_year}}'],
+          datasets: [{
+            label: 'Number of Post',
+            data: ['{{count_post.count_post_year}}','{{count_post.count_post_part_year}}'],
+            borderWidth: 1,
+            backgroundColor: [
+              'rgb(21, 75, 182)',
+              'rgb(244, 110, 103)',
+            ]
+          }]
+        },
+      });
+    }
+</script>
+
+<script>
+    const statisticsTypeSelect = document.querySelector('select[name="statistics_type"]');
+    const selectedYearSelect = document.querySelector('select[name="selected_year"]');
+    const yearNotice = document.getElementById('yearNotice');
+
+    statisticsTypeSelect.addEventListener('change', function() {
+        const selectedOption = statisticsTypeSelect.options[statisticsTypeSelect.selectedIndex].value;
+        if (selectedOption === 'Statistics_year') {
+            const selectedYear = selectedYearSelect.value;
+            const currentYear = new Date().getFullYear();
+            if (selectedYear === '') {
+                yearNotice.textContent = 'Please select a year';
+            } else if (parseInt(selectedYear) > currentYear) {
+                yearNotice.textContent = 'Please select a valid year';
+            } else {
+                yearNotice.textContent = 'Please select statistical year. We will announce the name of your choice until now.';
+            }
+        } else {
+            yearNotice.textContent = 'Please select statistical year. We will announce the name of your choice.';
+        }
+    });
+</script>
+
+{% endblock %}

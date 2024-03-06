@@ -1,0 +1,36 @@
+{% extends 'admin/base_site.html' %}
+
+{% block content %}
+
+<div class="container">
+  <h1>THỐNG KÊ HỆ THỐNG</h1>
+
+  <h2>Thống kê người dùng</h2>
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>Active Hosts</th>
+          <th>Not Active Hosts</th>
+          <th>Active Users</th>
+          <th>Not Active Users</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in top_hosts %}
+        <tr>
+          <td>{{ u.id }}-{{ u.user.id }}</td>
+          <td>{{ u.avg }}</td>
+
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+
+<!--<canvas id="myChart"></canvas>-->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% endblock %}
